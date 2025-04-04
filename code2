@@ -1,0 +1,54 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+
+def theoretical_expected_loops(x):
+    """
+    Compute the expected number of loops for x ropes using the formula:
+    E(loops) = sum_{r=1}^{x} 1/(2r - 1)
+    """
+    return sum(1/(2*r - 1) for r in range(1, x + 1))
+
+def simulate_ropes(x):
+    """
+    Simulate the rope-tying process for x ropes.
+    At each step (with r ropes remaining), the probability of forming
+    a loop is 1/(2r-1), and each move decreases the rope count by 1.
+    With only one rope left, a loop is forced.
+    """
+    loops = 0
+    r = x
+    while r > 1:
+        # With probability 1/(2r-1), we form a loop on this move.
+        if random.random() < 1/(2*r - 1):
+            loops += 1
+        r -= 1  # One rope is removed regardless of the outcome.
+    loops += 1  # The final remaining rope always forms a loop.
+    return loops
+
+def simulation_average(x, trials=10000):
+    """
+    Estimate the expected number of loops by averaging over many trials.
+    """
+    results = [simulate_ropes(x) for _ in range(trials)]
+    return np.mean(results)
+
+# Choose a range of rope counts to analyze
+x_values = np.arange(10, 201, 10)  # For example, from 10 to 200 ropes in steps of 10
+
+# Calculate theoretical expected loops for each x
+theoretical_values = [theoretical_expected_loops(x) for x in x_values]
+
+# Calculate simulated expected loops for each x using Monte Carlo estimation.
+simulation_values = [simulation_average(x, trials=5000) for x in x_values]
+
+# Plotting the results
+plt.figure(figsize=(10, 6))
+plt.plot(x_values, theoretical_values, 'o-', label="Theoretical Expected Loops")
+plt.plot(x_values, simulation_values, 'x--', label="Simulated Expected Loops (avg over trials)")
+plt.xlabel("Number of Ropes (x)")
+plt.ylabel("Expected Number of Loops")
+plt.title("Expected Number of Loops vs. Number of Ropes")
+plt.legend()
+plt.grid(True)
+plt.show()
